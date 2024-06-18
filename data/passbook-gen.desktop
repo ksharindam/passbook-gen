@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=PassbookGen
+Comment=Passbook Page Generator
+Exec=passbook_gen
+Icon=passbook-gen
+Categories=Office;
+Terminal=false
+StartupNotify=false
