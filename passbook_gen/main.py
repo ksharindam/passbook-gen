@@ -9,12 +9,12 @@ sys.path.append(os.path.dirname(__file__)) # for enabling python 2 like import
 
 from __init__ import __version__, COPYRIGHT_YEAR, AUTHOR_NAME, AUTHOR_EMAIL
 
-from PyQt5.QtCore import QTimer, Qt, QPoint, QSettings, QStandardPaths, QDir
-from PyQt5.QtGui import (QPixmap, QImage, QPainter, QPen, QFontMetrics, QFont, QIcon,
+from PyQt5.QtCore import QTimer, Qt, QPoint, QRectF, QSettings, QStandardPaths, QDir
+from PyQt5.QtGui import (QPixmap, QImage, QPainter, QPen, QFontMetrics, QFont, QIcon, QFontDatabase,
     QTransform, QColor
 )
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QStatusBar, QGridLayout, QVBoxLayout, QHBoxLayout, QFormLayout,
+    QApplication, QMainWindow, QGridLayout, QVBoxLayout, QHBoxLayout, QFormLayout, QStyleFactory,
     QSizePolicy, QFrame, QGroupBox, QWidget, QScrollArea,
     QLabel, QLineEdit, QPushButton, QComboBox, QFileDialog, QMessageBox
 )
@@ -62,6 +62,7 @@ class Window(QMainWindow):
         self.accountNoEdit.setText(account_no)
         # --------- Connect Signals ------------
         self.saveBtn.clicked.connect(self.savePassbookPage)
+        self.printBtn.clicked.connect(self.printPassbookPage)
         self.closeBtn.clicked.connect(self.close)
 
         for comboBox in (self.salutationCombo, self.accountTypeCombo):
@@ -102,7 +103,7 @@ class Window(QMainWindow):
 
         self.groupBox_1 = QGroupBox("Customer Details :", self.frame)
         self.salutationCombo = QComboBox(self.groupBox_1)
-        self.salutationCombo.addItems(["MR", "MRS", "SMT", "MASTR", "KUM"])
+        self.salutationCombo.addItems(["MR", "MRS", "SHRI", "SMT", "MASTR", "KUM"])
         self.customerNameEdit = QLineEdit(self.groupBox_1)
         self.customerNameEdit.setPlaceholderText("Customer Name")
         self.customerNameEdit.setFocus()
@@ -138,9 +139,11 @@ class Window(QMainWindow):
         btnLayout = QHBoxLayout(self.buttonWidget)
         btnLayout.setContentsMargins(0, 0, 0, 0)
         self.saveBtn = QPushButton(QIcon(":/icons/save.png"), "Save", self.buttonWidget)
+        self.printBtn = QPushButton(QIcon(":/icons/document-print.png"), "Print", self.buttonWidget)
         self.closeBtn = QPushButton(QIcon(":/icons/quit.png"), "Close", self.buttonWidget)
         btnLayout.addStretch()
         btnLayout.addWidget(self.saveBtn)
+        btnLayout.addWidget(self.printBtn)
         btnLayout.addWidget(self.closeBtn)
 
         self.formLayout = QFormLayout(self.groupBox)
@@ -214,6 +217,22 @@ class Window(QMainWindow):
             QMessageBox.critical(self, "Failed !", "Failed to save Image !")
 
 
+    def printPassbookPage(self):
+        printer = QPrinter(QPrinter.HighResolution)
+        dlg = QPrintDialog(printer, self)
+        # disable some options (PrintSelection, PrintCurrentPage are disabled by default)
+        dlg.setOption(QPrintDialog.PrintPageRange, False)
+        dlg.setOption(QPrintDialog.PrintCollateCopies, False)
+        if dlg.exec() == dlg.Accepted:
+            img = self.passbookPage.result
+            painter = QPainter(printer)
+            rect = painter.viewport()# area inside margin
+            scale = rect.width()/img.width() # fit to width
+            dst_rect = QRectF(0, 0.5*printer.physicalDpiY(), img.width()*scale, img.height()*scale)
+            painter.drawImage(dst_rect, img)
+            painter.end()
+
+
     def closeEvent(self, ev):
         """ Save all settings on window close """
         self.settings = QSettings("passbook-gen", "passbook-gen", self)
@@ -230,7 +249,7 @@ class Window(QMainWindow):
         self.settings.setValue("Village", self.villageEdit.text())
         self.settings.setValue("PinCode", self.pinCodeEdit.text())
         self.settings.setValue("City", self.cityEdit.text())
-        if len(self.accountNoEdit.text())>11:
+        if len(self.accountNoEdit.text())==16:
             self.settings.setValue("AccountNo", self.accountNoEdit.text()[:11])
         QMainWindow.closeEvent(self, ev)
 
@@ -283,23 +302,28 @@ class PassbookPage(QLabel):
         painter.end()
         self.setPixmap(QPixmap.fromImage(self.result.scaledToWidth(826)))
 
+
     def drawOnPainter(self, painter, page_w, page_h):
         scale_x = 0.8
         painter.setTransform(QTransform.fromScale(scale_x,1.0))# to make fonts narrower
 
-        painter.setPen(QColor(135,135,135))
-        font = QFont("DejaVu Sans Mono", 9)
+        painter.setPen(QColor(145,145,145))
+        if platform.system()=="Windows":
+            font = QFont("Consolas", 10)
+            line_height = int(0.9*QFontMetrics(font, painter.device()).height())
+        else: # linux
+            font = QFont("DejaVu Sans Mono", 9)
+            line_height = QFontMetrics(font, painter.device()).height()
         painter.setFont(font)
 
-        line_height = QFontMetrics(font, painter.device()).height()
 
 
         scale = page_w/21.0 # cm to px conversion factor
 
-        left = 1.9*scale/scale_x # for most line lines
-        left1 = 3.0*scale/scale_x # for account type header
-        left2 = 0.5*scale/scale_x # for comments
-        line_top = 0.8*scale
+        left = int(1.9*scale/scale_x) # for most line lines
+        left1 = int(3.0*scale/scale_x) # for account type header
+        left2 = int(0.5*scale/scale_x) # for comments
+        line_top = int(0.8*scale)
 
         s = "Each depositor is insured by DICGC upto a maximum Rs.5.00lac"
         painter.drawText(QPoint(left2, line_top), s)
@@ -309,7 +333,7 @@ class PassbookPage(QLabel):
         painter.drawText(QPoint(left2, line_top), s)
         line_top += line_height
 
-        line_top = 3.2*scale
+        line_top = int(3.2*scale)
 
         painter.drawText(QPoint(left, line_top), "BO :  " + self.branch_name)
         line_top += line_height
@@ -317,7 +341,7 @@ class PassbookPage(QLabel):
         painter.drawText(QPoint(left2, line_top), self.branch_addr)
         line_top += line_height
 
-        line_top = 5.0*scale
+        line_top = int(5.0*scale)
 
         if self.account_type=="SBBDA":
             painter.drawText(QPoint(left1, line_top), "SAVINGS FUND BASIC DEP A/C")
@@ -380,6 +404,9 @@ def main():
     # use fusion style on Windows platform
     if platform.system()=="Windows" and "Fusion" in QStyleFactory.keys():
         app.setStyle(QStyleFactory.create("Fusion"))
+    # add font (not used because adding fonts creates ugly rendering)
+    #id = QFontDatabase.addApplicationFont(os.path.dirname(__file__) + "/DejaVuSansMono.ttf")
+    #family = QFontDatabase.applicationFontFamilies(id)[0]
     # load window
     win = Window()
     sys.exit(app.exec())

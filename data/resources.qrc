@@ -1,5 +1,6 @@
 <RCC>
   <qresource>
+    <file>icons/document-print.png</file>
     <file>icons/passbook-gen.png</file>
     <file>icons/quit.png</file>
     <file>icons/save.png</file>
