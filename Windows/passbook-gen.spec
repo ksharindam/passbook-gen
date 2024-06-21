@@ -2,10 +2,10 @@
 
 
 a = Analysis(
-    ['../passbook_gen.py'],
+    ['../passbook_gen/main.py'],
     pathex=['../passbook_gen'],
     binaries=[],
-    datas=[("../passbook_gen/passbook-page.jpg", "passbook_gen")],
+    datas=[("../passbook_gen/passbook-page.jpg", ".")],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

@@ -5,10 +5,6 @@
 
 import sys, os, platform
 
-sys.path.append(os.path.dirname(__file__)) # for enabling python 2 like import
-
-from __init__ import __version__, COPYRIGHT_YEAR, AUTHOR_NAME, AUTHOR_EMAIL
-
 from PyQt5.QtCore import QTimer, Qt, QPoint, QRectF, QSettings, QStandardPaths, QDir
 from PyQt5.QtGui import (QPixmap, QImage, QPainter, QPen, QFontMetrics, QFont, QIcon, QFontDatabase,
     QTransform, QColor
@@ -20,7 +16,11 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
 
+sys.path.append(os.path.dirname(__file__)) # to enable python 2 like relative import
+
+from __init__ import __version__, COPYRIGHT_YEAR, AUTHOR_NAME, AUTHOR_EMAIL
 import resources_rc
+
 
 
 class Window(QMainWindow):

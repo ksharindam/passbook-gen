@@ -13,7 +13,7 @@ Download the precompiled packages from [releases page](https://github.com/kshari
 
 ### Installation
 
-If you wan to install using pip, first install these dependencies...  
+First install these dependencies...  
 
 * python3  
 * python3-pyqt5  
@@ -25,14 +25,4 @@ Then inside project root directory, run following command..
 `$ sudo pip3 install .`  
 
 To uninstall run..  
-`$ sudo pip3 uninstall passbook-gen`    
-
-### Usage
-
-To run after installing, type command..  
-`$ passbook_gen`  
-
-If you want to run the program without/before installing, then  
-Open terminal and change to project root directory and run  
-`$ ./passbook_gen.py`  
-
+`$ sudo pip3 uninstall passbook-gen`  
