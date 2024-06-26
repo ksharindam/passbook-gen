@@ -4,10 +4,12 @@
 # Copyright (C) 2024 Arindam Chaudhuri <arindamsoft94@gmail.com>
 
 import sys, os, platform
+from datetime import datetime
 
-from PyQt5.QtCore import QTimer, Qt, QPoint, QRectF, QSettings, QStandardPaths, QDir
+from PyQt5.QtCore import ( QTimer, Qt, QPoint, QRectF, QSettings,
+    QStandardPaths, QDir, QRegExp)
 from PyQt5.QtGui import (QPixmap, QImage, QPainter, QPen, QFontMetrics, QFont, QIcon, QFontDatabase,
-    QTransform, QColor
+    QTransform, QColor, QIntValidator, QRegExpValidator
 )
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QGridLayout, QVBoxLayout, QHBoxLayout, QFormLayout, QStyleFactory,
@@ -50,9 +52,10 @@ class Window(QMainWindow):
         if not curr_dir or not os.path.isdir(curr_dir):
             curr_dir = QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation)
         QDir.setCurrent(curr_dir)
-        #self.openDateEdit.setText(datetime.today().strftime("%d-%m-%Y"))
+        self.issueDateEdit.setToday()
         self.branchNameEdit.setText(branch_name)
         self.branchAddressEdit.setText(branch_addr)
+        self.branchAddressEdit.home(False)# show text left aligned
         self.ifscEdit.setText(ifsc)
         self.micrEdit.setText(micr)
 
@@ -84,6 +87,7 @@ class Window(QMainWindow):
 
 
     def setupUi(self):
+        """ create widgets and layouts """
         self.centralwidget = QWidget(self)
         self.setCentralWidget(self.centralwidget)
 
@@ -110,18 +114,23 @@ class Window(QMainWindow):
         self.careOfEdit = QLineEdit(self.groupBox_1)
         self.villageEdit = QLineEdit(self.groupBox_1)
         self.pinCodeEdit = QLineEdit(self.groupBox_1)
+        self.pinCodeEdit.setValidator(QIntValidator(0,999999))
         self.cityEdit = QLineEdit(self.groupBox_1)
         self.aadhaarNoEdit = QLineEdit(self.groupBox_1)
-        self.aadhaarNoEdit.setMaxLength(4)
+        self.aadhaarNoEdit.setPlaceholderText("Last 4 Digit")
+        self.aadhaarNoEdit.setValidator(QIntValidator(0,9999))
 
         self.groupBox_2 = QGroupBox("Account Details :", self.frame)
         self.accountTypeCombo = QComboBox(self.groupBox_1)
         self.accountTypeCombo.addItems(["SBBDA", "SBGEN"])
         self.accountNoEdit = QLineEdit(self.groupBox_1)
+        self.accountNoEdit.setMaxLength(16)
+        self.accountNoEdit.setValidator(QIntValidator())
         self.cifEdit = QLineEdit(self.groupBox_1)
-        self.openDateEdit = QLineEdit(self.groupBox_2)
+        self.cifEdit.setPlaceholderText("Customer ID")
+        self.openDateEdit = DateEdit(self.groupBox_2)
         self.openDateEdit.setPlaceholderText("Account Opening Date")
-        self.issueDateEdit = QLineEdit(self.groupBox_2)
+        self.issueDateEdit = DateEdit(self.groupBox_2)
         self.issueDateEdit.setPlaceholderText("Passbook Issue Date")
 
 
@@ -395,6 +404,26 @@ class PassbookPage(QLabel):
         painter.drawText(QPoint(left, line_top), "Date of Issue : %s"%self.issue_date)
         line_top += line_height
 
+
+
+class DateEdit(QLineEdit):
+    """ automatically puts date-separator between numbers """
+    def __init__(self, parent):
+        QLineEdit.__init__(self, parent)
+        self.sep = "-" # date separator
+        # validator for "DD/MM/YYYY" (allows entering DDMMYYYY then converts to DD/MM/YYYY)
+        self.setValidator(QRegExpValidator(QRegExp("\d{2}[0-9%s]\d{2}[0-9%s]\d{4}"%(self.sep,self.sep)), self))
+
+    def keyPressEvent(self, ev):
+        # automatically insert / where required
+        QLineEdit.keyPressEvent(self, ev)
+        text = self.text()
+        if len(text) in (3,6) and text[-1]!=self.sep:
+            self.setText(text[:-1] + self.sep + text[-1])
+
+    def setToday(self):
+        """ set today's date """
+        self.setText(datetime.today().strftime(self.sep.join(["%d","%m","%Y"])))
 
 
 def main():

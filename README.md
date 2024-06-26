@@ -4,7 +4,7 @@
 ![Downloads Total](https://img.shields.io/github/downloads/ksharindam/passbook-gen/total)
 ![Downloads Latest](https://img.shields.io/github/downloads/ksharindam/passbook-gen/latest/total)
 
-# passbook-gen
+# PassbookGen
 A dummy passbook page generator    
 
 
