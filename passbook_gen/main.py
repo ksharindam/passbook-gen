@@ -21,6 +21,7 @@ from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
 sys.path.append(os.path.dirname(__file__)) # to enable python 2 like relative import
 
 from __init__ import __version__, COPYRIGHT_YEAR, AUTHOR_NAME, AUTHOR_EMAIL
+from barcode_generator import BarcodeGeneratorDialog
 import resources_rc
 
 
@@ -64,6 +65,7 @@ class Window(QMainWindow):
         self.cityEdit.setText(city)
         self.accountNoEdit.setText(account_no)
         # --------- Connect Signals ------------
+        self.generateBarcodeBtn.clicked.connect(self.generateBarcode)
         self.saveBtn.clicked.connect(self.savePassbookPage)
         self.printBtn.clicked.connect(self.printPassbookPage)
         self.closeBtn.clicked.connect(self.close)
@@ -147,9 +149,11 @@ class Window(QMainWindow):
         self.buttonWidget = QWidget(self.centralwidget)
         btnLayout = QHBoxLayout(self.buttonWidget)
         btnLayout.setContentsMargins(0, 0, 0, 0)
+        self.generateBarcodeBtn = QPushButton(QIcon(":/icons/barcode.png"), "Generate Barcode", self.buttonWidget)
         self.saveBtn = QPushButton(QIcon(":/icons/save.png"), "Save", self.buttonWidget)
         self.printBtn = QPushButton(QIcon(":/icons/document-print.png"), "Print", self.buttonWidget)
         self.closeBtn = QPushButton(QIcon(":/icons/quit.png"), "Close", self.buttonWidget)
+        btnLayout.addWidget(self.generateBarcodeBtn)
         btnLayout.addStretch()
         btnLayout.addWidget(self.saveBtn)
         btnLayout.addWidget(self.printBtn)
@@ -240,6 +244,10 @@ class Window(QMainWindow):
             dst_rect = QRectF(0, 0.5*printer.physicalDpiY(), img.width()*scale, img.height()*scale)
             painter.drawImage(dst_rect, img)
             painter.end()
+
+    def generateBarcode(self):
+        dlg = BarcodeGeneratorDialog(self)
+        dlg.exec()
 
 
     def closeEvent(self, ev):

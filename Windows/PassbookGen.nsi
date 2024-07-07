@@ -1,6 +1,6 @@
 ; HM NIS Edit Wizard helper defines
 !define PROG_NAME "PassbookGen"
-!define PROG_VERSION "0.2.0"
+!define PROG_VERSION "0.3.0"
 !define PROG_PUBLISHER "Arindamsoft"
 !define PROG_ICON "passbook-gen.ico"
 !define PROG_EXEC "passbook_gen.exe"
