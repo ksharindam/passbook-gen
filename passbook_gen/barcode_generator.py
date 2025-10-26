@@ -279,8 +279,8 @@ class BarcodeGeneratorDialog(QDialog):
 
         img = QImage(img_w, img_h, QImage.Format_RGB32)
         img.fill(Qt.white)
-        img.setDotsPerMeterX(dpi/0.0254)
-        img.setDotsPerMeterY(dpi/0.0254)
+        img.setDotsPerMeterX(int(dpi/0.0254))
+        img.setDotsPerMeterY(int(dpi/0.0254))
 
         painter = QPainter(img)
         painter.setRenderHint(QPainter.Antialiasing, True)

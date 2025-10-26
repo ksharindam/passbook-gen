@@ -8,7 +8,7 @@ def readme():
 
 if platform.system()=='Linux':
     data_files = [('share/applications', ['data/passbook-gen.desktop']),
-                ('share/icons', ['data/icons/passbook-gen.png'])]
+                ('share/icons/hicolor/scalable/apps', ['data/icons/passbook-gen.png'])]
 else:
     data_files = []
 
